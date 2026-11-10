@@ -1,0 +1,16 @@
+ORANGE SYNTH  -  by Robby B   (macOS)
+=====================================
+
+INSTALL
+1. Unzip, then copy "Orange Synth.vst3" into:
+      ~/Library/Audio/Plug-Ins/VST3
+   (In Finder: Go menu -> hold Option -> Library -> Audio -> Plug-Ins -> VST3.
+    Or press Cmd+Shift+G and paste:  ~/Library/Audio/Plug-Ins/VST3 )
+2. The plugin is not signed by Apple, so macOS may block it. Open Terminal and run:
+      xattr -cr ~/Library/Audio/Plug-Ins/VST3/"Orange Synth.vst3"
+3. Open FL Studio -> Options -> Manage plugins -> "Find installed plugins"
+   (turn on "Rescan previously verified"), then restart FL Studio.
+4. Add it from the Plugin Picker -> Installed -> Generators -> Orange Synth.
+
+200 presets: Bass, Keys, Leads, Pads, Plucks, Stabs, FX. Use the category / preset boxes
+at the top of the plugin.

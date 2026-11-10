@@ -33,19 +33,65 @@
           "run": "Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip; Expand-Archive pluginval.zip -DestinationPath pv; $p = (Get-ChildItem pv -Recurse -Filter pluginval.exe | Select-Object -First 1).FullName; $plugin = (Resolve-Path \"dist/Orange Synth.vst3\").Path; $proc = Start-Process -FilePath $p -ArgumentList \"--strictness-level 5 --skip-gui-tests --timeout-ms 120000 `\"$plugin`\"\" -Wait -PassThru -NoNewWindow; Write-Host \"pluginval exit code: $($proc.ExitCode)\"; if ($proc.ExitCode -ne 0) { exit 1 }"
         },
         {
+          "name": "Zip plugin",
+          "shell": "pwsh",
+          "run": "Compress-Archive -Path dist/* -DestinationPath Orange-Synth-VST3-Windows.zip"
+        },
+        {
           "uses": "actions/upload-artifact@v4",
           "with": {
-            "name": "Orange-Synth-VST3-Windows",
-            "path": "dist"
+            "name": "windows",
+            "path": "Orange-Synth-VST3-Windows.zip"
+          }
+        }
+      ]
+    },
+    "build-macos": {
+      "runs-on": "macos-latest",
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "name": "Configure",
+          "run": "cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\""
+        },
+        {
+          "name": "Build",
+          "run": "cmake --build build --config Release --parallel 4"
+        },
+        {
+          "name": "Collect, sign (ad-hoc) and zip",
+          "run": "mkdir -p dist && VST=$(find build -name \"*.vst3\" -type d | head -1) && test -n \"$VST\" && cp -R \"$VST\" dist/ && codesign --force --deep --sign - \"dist/Orange Synth.vst3\" && cp INSTALL-MAC.txt dist/ && cd dist && zip -qry ../Orange-Synth-VST3-macOS.zip \"Orange Synth.vst3\" INSTALL-MAC.txt && ls -la .. | grep zip"
+        },
+        {
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "macos",
+            "path": "Orange-Synth-VST3-macOS.zip"
+          }
+        }
+      ]
+    },
+    "release": {
+      "runs-on": "ubuntu-latest",
+      "needs": [
+        "build-windows",
+        "build-macos"
+      ],
+      "steps": [
+        {
+          "uses": "actions/download-artifact@v4",
+          "with": {
+            "path": "artifacts"
           }
         },
         {
           "name": "Publish release",
-          "shell": "pwsh",
           "env": {
             "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
           },
-          "run": "Compress-Archive -Path dist/* -DestinationPath Orange-Synth-VST3-Windows.zip; gh release create \"v1.0.$env:GITHUB_RUN_NUMBER\" Orange-Synth-VST3-Windows.zip --title \"Orange Synth build $env:GITHUB_RUN_NUMBER\" --notes \"Windows VST3. Unzip and follow INSTALL.txt.\""
+          "run": "gh release create \"v1.0.${{ github.run_number }}\" artifacts/*/*.zip --repo ${{ github.repository }} --title \"Orange Synth build ${{ github.run_number }}\" --notes \"Windows and macOS VST3. Unzip and follow INSTALL.txt (Windows) or INSTALL-MAC.txt (macOS).\""
         }
       ]
     }

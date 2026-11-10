@@ -30,7 +30,7 @@
         {
           "name": "Validate plugin (pluginval)",
           "shell": "pwsh",
-          "run": "Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip; Expand-Archive pluginval.zip -DestinationPath pv; $p = (Get-ChildItem pv -Recurse -Filter pluginval.exe | Select-Object -First 1).FullName; & $p --strictness-level 5 --skip-gui-tests --validate-in-process --timeout-ms 120000 (Resolve-Path \"dist/Orange Synth.vst3\").Path; if ($LASTEXITCODE -ne 0) { exit 1 }"
+          "run": "Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip; Expand-Archive pluginval.zip -DestinationPath pv; $p = (Get-ChildItem pv -Recurse -Filter pluginval.exe | Select-Object -First 1).FullName; & $p --strictness-level 5 --skip-gui-tests --timeout-ms 120000 (Resolve-Path \"dist/Orange Synth.vst3\").Path; Write-Host \"pluginval exit code: $LASTEXITCODE\"; if ($LASTEXITCODE -ne 0) { exit 1 }"
         },
         {
           "uses": "actions/upload-artifact@v4",

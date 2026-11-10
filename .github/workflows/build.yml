@@ -1,11 +1,53 @@
 {
   "name": "Build Orange Synth",
-  "on": ["push", "workflow_dispatch"],
-  "jobs": { "build-windows": { "runs-on": "windows-2022", "steps": [
-    { "uses": "actions/checkout@v4" },
-    { "name": "Configure", "run": "cmake -B build -G \"Visual Studio 17 2022\" -A x64" },
-    { "name": "Build", "run": "cmake --build build --config Release --parallel" },
-    { "name": "Collect plugin", "shell": "pwsh", "run": "New-Item -ItemType Directory -Force -Path dist | Out-Null; $vst = Get-ChildItem -Path build -Recurse -Directory -Filter \"*.vst3\" | Select-Object -First 1; if (-not $vst) { throw \"No .vst3 produced\" }; Copy-Item -Recurse $vst.FullName (\"dist/\" + $vst.Name); Copy-Item INSTALL.txt dist/INSTALL.txt" },
-    { "uses": "actions/upload-artifact@v4", "with": { "name": "Orange-Synth-VST3-Windows", "path": "dist" } }
-  ] } }
+  "on": [
+    "push",
+    "workflow_dispatch"
+  ],
+  "permissions": {
+    "contents": "write"
+  },
+  "jobs": {
+    "build-windows": {
+      "runs-on": "windows-2022",
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "name": "Configure",
+          "run": "cmake -B build -G \"Visual Studio 17 2022\" -A x64"
+        },
+        {
+          "name": "Build",
+          "run": "cmake --build build --config Release --parallel"
+        },
+        {
+          "name": "Collect plugin",
+          "shell": "pwsh",
+          "run": "New-Item -ItemType Directory -Force -Path dist | Out-Null; $vst = Get-ChildItem -Path build -Recurse -Directory -Filter \"*.vst3\" | Select-Object -First 1; if (-not $vst) { throw \"No .vst3 produced\" }; Copy-Item -Recurse $vst.FullName (\"dist/\" + $vst.Name); Copy-Item INSTALL.txt dist/INSTALL.txt"
+        },
+        {
+          "name": "Validate plugin (pluginval)",
+          "shell": "pwsh",
+          "run": "Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pluginval.zip; Expand-Archive pluginval.zip -DestinationPath pv; $p = (Get-ChildItem pv -Recurse -Filter pluginval.exe | Select-Object -First 1).FullName; & $p --strictness-level 5 --skip-gui-tests --validate-in-process --timeout-ms 120000 (Resolve-Path \"dist/Orange Synth.vst3\").Path; if ($LASTEXITCODE -ne 0) { exit 1 }"
+        },
+        {
+          "uses": "actions/upload-artifact@v4",
+          "with": {
+            "name": "Orange-Synth-VST3-Windows",
+            "path": "dist"
+          }
+        },
+        {
+          "name": "Publish release",
+          "shell": "pwsh",
+          "env": {
+            "GH_TOKEN": "${{ secrets.GITHUB_TOKEN }}"
+          },
+          "run": "Compress-Archive -Path dist/* -DestinationPath Orange-Synth-VST3-Windows.zip; gh release create \"v1.0.$env:GITHUB_RUN_NUMBER\" Orange-Synth-VST3-Windows.zip --title \"Orange Synth build $env:GITHUB_RUN_NUMBER\" --notes \"Windows VST3. Unzip and follow INSTALL.txt.\""
+        }
+      ]
+    }
+  }
 }

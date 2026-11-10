@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(OrangeSynth VERSION 1.0.0)
 
+# Link the C++ runtime statically so the plugin needs no Visual C++ redistributable
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

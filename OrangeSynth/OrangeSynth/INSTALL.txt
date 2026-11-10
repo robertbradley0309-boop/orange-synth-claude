@@ -1,0 +1,20 @@
+ORANGE SYNTH  -  by Robby B
+===========================
+
+INSTALL (Windows / FL Studio)
+1. Copy the folder "Orange Synth.vst3" into:
+      C:\Program Files\Common Files\VST3
+2. Open FL Studio -> Options -> Manage plugins -> click "Find plugins".
+3. Add it from  Channels -> Add one -> Orange Synth  (or the plugin database).
+
+PRESETS
+200 presets in 7 categories: Bass (40), Keys (30), Leads (30), Pads (30),
+Plucks (25), Stabs (25), FX (20).
+- Use the Category box, the preset box and the < > arrows at the top of the plugin.
+- FL Studio's own preset arrows (in the plugin wrapper header) also step through
+  them, named "Category: Name".
+- Double-click any knob to reset it to its default.
+
+TIPS
+- Bass presets are voiced to sound right around C1-C3.
+- Glide works best when notes overlap (legato) - try it on Acid / Rubber / Hoover.
